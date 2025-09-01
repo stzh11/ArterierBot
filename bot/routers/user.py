@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
-from utils.uoload import upload_state_files_to_drive
+from utils.upload import upload_state_files_to_drive
 from keyboards.user import survey_button, q5_done_kb, q5_toggle_kb, multi_choice_kb
 from aiogram.enums.parse_mode import ParseMode
 from states.states import SurveyStates
@@ -351,6 +351,7 @@ async def process_q7(messages: list[Message], state: FSMContext, tail: Message):
     await state.update_data(q7_references=files)
 
     if len(files) <= Settings.MAX_FILES:
+        await upload_state_files_to_drive(tail.bot, state, key="q7_references", folder_id=Settings.DRIVE_FOLDER_Q7)
         await user_form.FormQuestions.ask_q8(tail, state)
     else:
         await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
@@ -491,6 +492,8 @@ async def process_q12(messages: list[Message], state: FSMContext, tail: Message)
     await state.update_data(q12_interior_photos=files)
 
     if len(files) <= Settings.MAX_FILES:
+        key = str('q12_interior_photos'[0]["file_id"])
+        await upload_state_files_to_drive(tail.bot, state, key=key, folder_id=Settings.DRIVE_FOLDER_Q7)
         await user_form.FormQuestions.ask_q13(tail, state)
     else:
         await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
@@ -562,8 +565,6 @@ async def q16_contact_method_handl(cq: CallbackQuery, state: FSMContext):
 async def q17_contact_details_handl(message: Message, state: FSMContext):
     await state.update_data(q17_contact_details=message.text)
     
-    await upload_state_files_to_drive(message.bot, state, key="q7_files", folder_id=Settings.DRIVE_FOLDER_Q7)
-    await upload_state_files_to_drive(message.bot, state, key="q7_files", folder_id=Settings.DRIVE_FOLDER_Q7)
     data = await state.get_data()
     format_data = format_survey_for_sheets(data)
     print(data)

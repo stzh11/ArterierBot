@@ -1,8 +1,8 @@
 import io
 from aiogram import Bot
 from settings import Settings
-
-
+import logging
+log = logging.getLogger(__name__)
 def format_survey_for_sheets(data: dict) -> dict:
     mapping = {
         "q1_bought_art": Settings.q1_options,
@@ -38,19 +38,20 @@ def format_survey_for_sheets(data: dict) -> dict:
     return result
 
 
-async def fetch_photo_bytes(bot: Bot, photo, *, fallback_name: str = "photo.jpg"):
-    # PhotoSize не содержит имени файла → дадим своё
-    name = fallback_name
-    mime = "image/jpeg"
-    file = await bot.get_file(photo.file_id)
-    buf = io.BytesIO()
-    await bot.download(file, destination=buf)
-    return {"name": name, "mime": mime, "bytes": buf.getvalue()}
+async def fetch_photo_bytes_verbose(bot: Bot, file_id: str, fallback_name: str):
+    log.info("[TG] fetch photo: file_id=%s", file_id)
+    tg_file = await bot.get_file(file_id)
+    log.info("[TG] photo path=%s file_id=%s", tg_file.file_path, tg_file.file_id)
+    bio = await bot.download_file(tg_file.file_path)  # BytesIO
+    data = bio.getvalue()
+    log.info("[TG] photo bytes=%d", len(data))
+    return {"name": fallback_name, "mime": "image/jpeg", "bytes": data}
 
-async def fetch_document_bytes(bot: Bot, doc):
-    name = doc.file_name or "document"
-    mime = doc.mime_type or "application/octet-stream"
-    file = await bot.get_file(doc.file_id)
-    buf = io.BytesIO()
-    await bot.download(file, destination=buf)
-    return {"name": name, "mime": mime, "bytes": buf.getvalue()}
+async def fetch_document_bytes_verbose(bot: Bot, file_id: str, name: str, mime: str):
+    log.info("[TG] fetch document: file_id=%s name=%s mime=%s", file_id, name, mime)
+    tg_file = await bot.get_file(file_id)
+    log.info("[TG] doc path=%s file_id=%s", tg_file.file_path, tg_file.file_id)
+    bio = await bot.download_file(tg_file.file_path)  # BytesIO
+    data = bio.getvalue()
+    log.info("[TG] doc bytes=%d", len(data))
+    return {"name": name, "mime": mime or "application/octet-stream", "bytes": data}

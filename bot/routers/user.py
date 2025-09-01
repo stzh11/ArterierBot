@@ -3,7 +3,6 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
-from utils.upload import upload_state_files_to_drive
 from keyboards.user import survey_button, q5_done_kb, q5_toggle_kb, multi_choice_kb
 from aiogram.enums.parse_mode import ParseMode
 from states.states import SurveyStates
@@ -11,7 +10,7 @@ from settings import Settings, SHEET
 import asyncio
 from routers import user_form
 from utils.sheets import save_survey
-from utils.helpers import format_survey_for_sheets
+from utils.helpers import format_survey_for_sheets, fetch_photo_bytes_verbose
 from utils.localization import localize_options, kb_texts, question_text
 user_router = Router()
 
@@ -351,7 +350,6 @@ async def process_q7(messages: list[Message], state: FSMContext, tail: Message):
     await state.update_data(q7_references=files)
 
     if len(files) <= Settings.MAX_FILES:
-        await upload_state_files_to_drive(tail.bot, state, key="q7_references", folder_id=Settings.DRIVE_FOLDER_Q7)
         await user_form.FormQuestions.ask_q8(tail, state)
     else:
         await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
@@ -492,8 +490,6 @@ async def process_q12(messages: list[Message], state: FSMContext, tail: Message)
     await state.update_data(q12_interior_photos=files)
 
     if len(files) <= Settings.MAX_FILES:
-        key = str('q12_interior_photos'[0]["file_id"])
-        await upload_state_files_to_drive(tail.bot, state, key=key, folder_id=Settings.DRIVE_FOLDER_Q7)
         await user_form.FormQuestions.ask_q13(tail, state)
     else:
         await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
@@ -568,6 +564,13 @@ async def q17_contact_details_handl(message: Message, state: FSMContext):
     data = await state.get_data()
     format_data = format_survey_for_sheets(data)
     print(data)
+    q12_ids = [x["file_id"] for x in data.get("q12_interior_photos", []) if isinstance(x, dict) and x.get("file_id")]
+    q7_ids  = [x["file_id"] for x in data.get("q7_references", []) if isinstance(x, dict) and x.get("file_id")]
+    for id in q7_ids:
+        print("function start")
+        await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, fallback_name="q7", user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q7, file_name="q7_reference")
+    for id in q12_ids:
+        await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, fallback_name="q12", user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q12, file_name="q12_interier")
     save_survey(
         SHEET,
         data=format_data,

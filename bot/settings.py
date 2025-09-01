@@ -10,8 +10,8 @@ images_path = Path(__file__).parent.parent / "static" / "images"
 class Settings:
     BOT_TOKEN = "8333896356:AAERB58Gb6k6scltmwf25j053nShy49NySo"
     GOOGLE_CREDS = "/Users/stepanzukov/Desktop/Projects/Arterier/creds.json"
-    DRIVE_FOLDER_Q7 = "https://drive.google.com/drive/folders/1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv?usp=drive_link"
-    DRIVE_FOLDER_Q12 = "https://drive.google.com/drive/folders/1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y?usp=drive_link"
+    DRIVE_FOLDER_Q7 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
+    DRIVE_FOLDER_Q12 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
     Q5_IMAGES = {
     "mono":     BASE_DIR  / "static" / "images" / "mono.jpg",
     "warm":     BASE_DIR  / "static" / "images" / "warm.jpg",

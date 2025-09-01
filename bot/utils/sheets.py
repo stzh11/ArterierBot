@@ -1,18 +1,41 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import os
+import gspread
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from requests import Request
 
-def init_sheets(spreadsheet_name: str, credentials_path: str = "/Users/stepanzukov/Desktop/Projects/Arterier/creds.json"):
-    scope = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+
+def init_sheets(spreadsheet_name: str):
+    creds = None
+    token_path = "/Users/stepanzukov/Desktop/Projects/Arterier/bot/token.json"
+    secret_path = "/Users/stepanzukov/Desktop/Projects/Arterier/client_secret.json"
+
+    # 1. Пробуем загрузить готовый токен
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+
+    # 2. Если нет токена или он недействителен → обновляем / создаём заново
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())   # тут важно скобки
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(secret_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+        with open(token_path, "w", encoding="utf-8") as f:
+            f.write(creds.to_json())
+
+    # 3. Авторизация через gspread
     client = gspread.authorize(creds)
     sh = client.open(spreadsheet_name)
     ws = sh.sheet1  # или sh.worksheet("Лист1")
     return ws
-
 
 HEADERS = [
     "timestamp",

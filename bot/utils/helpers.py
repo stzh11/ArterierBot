@@ -2,6 +2,7 @@ import io
 from aiogram import Bot
 from settings import Settings
 import logging
+from utils.upload import upload_bytes_to_folder, service
 log = logging.getLogger(__name__)
 def format_survey_for_sheets(data: dict) -> dict:
     mapping = {
@@ -38,14 +39,13 @@ def format_survey_for_sheets(data: dict) -> dict:
     return result
 
 
-async def fetch_photo_bytes_verbose(bot: Bot, file_id: str, fallback_name: str):
+async def fetch_photo_bytes_verbose(bot: Bot, file_id: str, fallback_name: str, user_id:str = "", folder_id:str = "", file_name: str = ""):
     log.info("[TG] fetch photo: file_id=%s", file_id)
     tg_file = await bot.get_file(file_id)
     log.info("[TG] photo path=%s file_id=%s", tg_file.file_path, tg_file.file_id)
     bio = await bot.download_file(tg_file.file_path)  # BytesIO
     data = bio.getvalue()
-    log.info("[TG] photo bytes=%d", len(data))
-    return {"name": fallback_name, "mime": "image/jpeg", "bytes": data}
+    return upload_bytes_to_folder(filename=f"{file_name}_{user_id}", data = data, folder_id=folder_id, service=service) 
 
 async def fetch_document_bytes_verbose(bot: Bot, file_id: str, name: str, mime: str):
     log.info("[TG] fetch document: file_id=%s name=%s mime=%s", file_id, name, mime)

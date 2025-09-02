@@ -208,9 +208,9 @@ class Settings:
             "sculpture": "Interior sculpture",
         },
         "q4_goal_options": {
-            "single",  "Оne accent piece of art",
-            "curated", "Сurated selection for the entire interior",
-            "other",   "Other",
+            "single":  "Оne accent piece of art",
+            "curated": "Сurated selection for the entire interior",
+            "other":   "Other",
         },
         "q5_options": {
             "mono": "Monochrome",

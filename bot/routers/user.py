@@ -538,7 +538,7 @@ async def q15_hobbies_handl(cq: CallbackQuery, state: FSMContext):
     lang = data["lang"]
     opts = localize_options(lang=lang, group_key="q15_options")
     buttons = kb_texts(lang)
-    kb = await multi_choice_kb(selected=selected, options=opts, back_value="q14_delivery_country", rows=[1,1,1,1,1,1,1,1,2,2,2],  back_text=buttons["back"], done_text=["done"])
+    kb = await multi_choice_kb(selected=selected, options=opts, back_value="q14_delivery_country", rows=[1,1,1,1,1,1,1,1,2,2,2],  back_text=buttons["back"], done_text=buttons["done"])
     await cq.message.edit_reply_markup(reply_markup=kb)
 
 

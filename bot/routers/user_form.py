@@ -58,6 +58,7 @@ class FormQuestions:
         text = question_text(lang=lang, key="q3.text")
         buttons = kb_texts(lang=lang)
         opts = localize_options(lang=lang, group_key="q3_options")
+        print(opts)
         await message.answer(
             text=text,
             reply_markup=await multi_choice_kb(
@@ -81,6 +82,7 @@ class FormQuestions:
         text = question_text(lang=lang, key="q4_goal.text")
         buttons = kb_texts(lang=lang)
         opts = localize_options(lang=lang, group_key="q4_goal_options")
+        print(opts)
         await message.answer(
             text=text,
             reply_markup=await multi_choice_kb(
@@ -287,7 +289,7 @@ class FormQuestions:
                 back_value="q14_delivery_country", 
                 back_text=buttons["back"], 
                 done_text=buttons["done"], 
-                rows = [1,1,1,1,1,1,1,1,2,2,1,2],
+                rows=[1,1,1,1,1,1,1,1,2,2,2],
             )
         )
         await state.set_state(SurveyStates.q15_hobbies)

@@ -1,41 +1,59 @@
+
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 import os
 import gspread
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from requests import Request
+from google.auth.transport.requests import Request as GoogleRequest
+import os
+from pathlib import Path
+
+import gspread
+from google.auth.exceptions import RefreshError
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request as GoogleRequest
 
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
-]
+    "https://www.googleapis.com/auth/spreadsheets",
+    ]
 
 def init_sheets(spreadsheet_name: str):
+    token_path = Path("/Users/stepanzukov/Desktop/Projects/Arterier/bot/token.json")
+    secret_path = Path("/Users/stepanzukov/Desktop/Projects/Arterier/client_secret.json")
+
     creds = None
-    token_path = "/Users/stepanzukov/Desktop/Projects/Arterier/bot/token.json"
-    secret_path = "/Users/stepanzukov/Desktop/Projects/Arterier/client_secret.json"
+    if token_path.exists():
+        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
 
-    # 1. Пробуем загрузить готовый токен
-    if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+    def _run_oauth_flow():
+        flow = InstalledAppFlow.from_client_secrets_file(str(secret_path), SCOPES)
+        # офлайн-рефреш и форс-консент, чтобы точно выдать новые скоупы
+        return flow.run_local_server(port=0, access_type="offline", prompt="consent")
 
-    # 2. Если нет токена или он недействителен → обновляем / создаём заново
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())   # тут важно скобки
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(secret_path, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_path, "w", encoding="utf-8") as f:
-            f.write(creds.to_json())
+        try:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(GoogleRequest())
+            else:
+                creds = _run_oauth_flow()
+        except RefreshError:
+            # чаще всего именно тут и случается invalid_scope
+            if token_path.exists():
+                token_path.unlink(missing_ok=True)
+            creds = _run_oauth_flow()
 
-    # 3. Авторизация через gspread
+        token_path.parent.mkdir(parents=True, exist_ok=True)
+        token_path.write_text(creds.to_json(), encoding="utf-8")
+    print("TOKEN FILE:", token_path, "exists:", os.path.exists(token_path))
+    print("GRANTED SCOPES:", getattr(creds, "scopes", None))
+    print("VALID:", creds.valid, "EXPIRED:", creds.expired, "REFRESH_TOKEN:", bool(getattr(creds, "refresh_token", None)))
     client = gspread.authorize(creds)
     sh = client.open(spreadsheet_name)
-    ws = sh.sheet1  # или sh.worksheet("Лист1")
-    return ws
+    return sh.sheet1
+
 
 HEADERS = [
     "timestamp",
@@ -68,21 +86,11 @@ def _join(value):
         return ", ".join(map(str, value))
     return str(value)
 
-def _files_to_str(files):
-    if not files:
-        return ""
-    return ", ".join(f.get("file_id", "") for f in files if isinstance(f, dict))
-
 def ensure_header(ws):
     values = ws.get_all_values()
     if not values:
         ws.append_row(HEADERS, value_input_option="USER_ENTERED")
 
-def _drive_links_to_str(objs):
-    if not objs:
-        return ""
-    # красиво: =HYPERLINK("url","name")
-    return ", ".join([f'=HYPERLINK("{o["link"]}","{o["name"]}")' for o in objs if "link" in o])
 
 
 def save_survey(ws, data: dict, user_id: int, username: str | None):
@@ -98,12 +106,12 @@ def save_survey(ws, data: dict, user_id: int, username: str | None):
         _join(data.get("q4_what_to_search")),
         _join(data.get("q5_colors")),
         data.get("q6_favorite_authors", ""),
-        _drive_links_to_str(data.get("q7_files_links")) or _files_to_str(data.get("q7_files")),
+        data.get("q7_folder_link", ""),
         data.get("q8_mood", ""),
         data.get("q9_wishes", ""),
         _join(data.get("q10_size")),
         _join(data.get("q11_format")),
-        _drive_links_to_str(data.get("q12_files_links")) or _files_to_str(data.get("q12_files")),
+        data.get("q7_folder_link", ""),
         data.get("q13_budget", ""),
         data.get("q14_delivery_country", ""),
         _join(data.get("q15_hobbies")),
@@ -111,3 +119,4 @@ def save_survey(ws, data: dict, user_id: int, username: str | None):
         data.get("q17_contact_details", ""),
     ]
     ws.append_row(row, value_input_option="USER_ENTERED")
+

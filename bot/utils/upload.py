@@ -1,19 +1,19 @@
-import argparse
+
 from io import BytesIO
-import mimetypes
 import os
-import sys
-from pathlib import Path
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-# Полный доступ для простоты интеграции (поиск папок, загрузка файлов и т.д.)
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+from google.auth.transport.requests import Request as GoogleRequest
 
-TOKEN_PATH = "token.json"
+SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/spreadsheets",
+    ]
+
+TOKEN_PATH = "/Users/stepanzukov/Desktop/Projects/Arterier/bot/token.json"
 CLIENT_SECRET_PATH = "/Users/stepanzukov/Desktop/Projects/Arterier/client_secret.json"
 
 
@@ -23,7 +23,7 @@ def get_drive_service():
         creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            creds.refresh(GoogleRequest())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_PATH, SCOPES)
             creds = flow.run_local_server(port=0)
@@ -32,31 +32,54 @@ def get_drive_service():
 
     return build("drive", "v3", credentials=creds)
 
+def ensure_folder_by_name(service, folder_name: str, parent_id: str | None = None) -> str:
+    FOLDER_MIME = "application/vnd.google-apps.folder"
 
-def ensure_folder_by_name(service, folder_name, parent_id=None):
-    q_parts = [
-        "mimeType = 'application/vnd.google-apps.folder'",
-        f"name = '{folder_name}'",
-        "trashed = false",
-    ]
-    if parent_id:
-        q_parts.append(f"'{parent_id}' in parents")
-    q = " and ".join(q_parts)
+    def _escape(s: str) -> str:
+        return s.replace("'", "\\'")
 
-    resp = service.files().list(q=q, fields="files(id, name)", pageSize=10).execute()
+    def _get_or_create_arterier_root() -> str:
+        q = (
+            f"mimeType = '{FOLDER_MIME}' and "
+            "name = 'Arterier' and trashed = false and 'root' in parents"
+        )
+        resp = service.files().list(q=q, fields="files(id)", pageSize=1).execute()
+        files = resp.get("files", [])
+        if files:
+            return files[0]["id"]
+        body = {"name": "Arterier", "mimeType": FOLDER_MIME, "parents": ["root"]}
+        created = service.files().create(body=body, fields="id").execute()
+        return created["id"]
+
+    def _is_descendant_of(node_id: str, ancestor_id: str) -> bool:
+        cur = node_id
+        seen = set()
+        while cur and cur not in seen:
+            seen.add(cur)
+            info = service.files().get(fileId=cur, fields="id, parents").execute()
+            parents = info.get("parents", [])
+            if ancestor_id in parents:
+                return True
+            cur = parents[0] if parents else None
+        return False
+
+    arterier_id = _get_or_create_arterier_root()
+    actual_parent_id = parent_id if (parent_id and _is_descendant_of(parent_id, arterier_id)) else arterier_id
+
+    q = (
+        f"mimeType = '{FOLDER_MIME}' and "
+        f"name = '{_escape(folder_name)}' and trashed = false and "
+        f"'{actual_parent_id}' in parents"
+    )
+    resp = service.files().list(q=q, fields="files(id)", pageSize=1).execute()
     files = resp.get("files", [])
     if files:
         return files[0]["id"]
 
-    metadata = {
-        "name": folder_name,
-        "mimeType": "application/vnd.google-apps.folder",
-    }
-    if parent_id:
-        metadata["parents"] = [parent_id]
-
+    metadata = {"name": folder_name, "mimeType": FOLDER_MIME, "parents": [actual_parent_id]}
     created = service.files().create(body=metadata, fields="id").execute()
     return created["id"]
+
 
 
 

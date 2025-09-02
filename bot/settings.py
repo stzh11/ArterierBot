@@ -9,7 +9,10 @@ images_path = Path(__file__).parent.parent / "static" / "images"
 
 class Settings:
     BOT_TOKEN = "8333896356:AAERB58Gb6k6scltmwf25j053nShy49NySo"
-    GOOGLE_CREDS = "/Users/stepanzukov/Desktop/Projects/Arterier/creds.json"
+    SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/spreadsheets",
+    ]
     DRIVE_FOLDER_Q7 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
     DRIVE_FOLDER_Q12 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
     Q5_IMAGES = {

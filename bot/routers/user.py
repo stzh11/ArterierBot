@@ -560,17 +560,20 @@ async def q16_contact_method_handl(cq: CallbackQuery, state: FSMContext):
 @user_router.message(SurveyStates.q17_contact_details)
 async def q17_contact_details_handl(message: Message, state: FSMContext):
     await state.update_data(q17_contact_details=message.text)
-    
     data = await state.get_data()
-    format_data = format_survey_for_sheets(data)
-    print(data)
     q12_ids = [x["file_id"] for x in data.get("q12_interior_photos", []) if isinstance(x, dict) and x.get("file_id")]
     q7_ids  = [x["file_id"] for x in data.get("q7_references", []) if isinstance(x, dict) and x.get("file_id")]
     for id in q7_ids:
         print("function start")
-        await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, fallback_name="q7", user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q7, file_name="q7_reference")
+        file_link = await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q7, file_name="q7_reference")
+        await state.update_data(q7_folder_link=file_link)
+
     for id in q12_ids:
-        await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, fallback_name="q12", user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q12, file_name="q12_interier")
+        file_link = await fetch_photo_bytes_verbose(file_id=id, bot=message.bot, user_id=message.from_user.id, folder_id=Settings.DRIVE_FOLDER_Q12, file_name="q12_interier")
+        await state.update_data(q12_folder_links=file_link)
+    data = await state.get_data()
+    format_data = format_survey_for_sheets(data)
+    print(data)
     save_survey(
         SHEET,
         data=format_data,

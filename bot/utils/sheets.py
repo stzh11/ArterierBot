@@ -1,4 +1,5 @@
 
+import asyncio
 import gspread
 from datetime import datetime
 import os
@@ -8,7 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request as GoogleRequest
 import os
 from pathlib import Path
-
+from gspread.exceptions import APIError
 import gspread
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
@@ -86,15 +87,20 @@ def _join(value):
         return ", ".join(map(str, value))
     return str(value)
 
-def ensure_header(ws):
-    values = ws.get_all_values()
+async def ensure_header_async(ws) -> None:
+    values = await asyncio.to_thread(ws.get_all_values)
     if not values:
-        ws.append_row(HEADERS, value_input_option="USER_ENTERED")
+        try:
+            await asyncio.to_thread(ws.append_row, HEADERS, value_input_option="USER_ENTERED")
+        except APIError as e:
+            # Если параллельно уже кто-то успел написать хедер — просто игнорируем конфликт
+            if "Already exists" in str(e) or "invalid" in str(e):
+                return
+            raise
 
+async def save_survey(ws, data: dict, user_id: int, username: str | None) -> None:
+    await ensure_header_async(ws)
 
-
-def save_survey(ws, data: dict, user_id: int, username: str | None):
-    ensure_header(ws)
     row = [
         datetime.now().isoformat(timespec="seconds"),
         str(user_id),
@@ -111,12 +117,25 @@ def save_survey(ws, data: dict, user_id: int, username: str | None):
         data.get("q9_wishes", ""),
         _join(data.get("q10_size")),
         _join(data.get("q11_format")),
-        data.get("q7_folder_link", ""),
+        data.get("q12_folder_link", ""),
         data.get("q13_budget", ""),
         data.get("q14_delivery_country", ""),
         _join(data.get("q15_hobbies")),
         data.get("q16_contact_method", ""),
         data.get("q17_contact_details", ""),
     ]
-    ws.append_row(row, value_input_option="USER_ENTERED")
 
+    # Небольшой ретрай на случай 429/500/503 от API
+    backoff = 0.5
+    for attempt in range(4):
+        try:
+            await asyncio.to_thread(ws.append_row, row, value_input_option="USER_ENTERED")
+            return
+        except APIError as e:
+            s = str(e)
+            transient = any(x in s for x in ("rateLimitExceeded", "internalError", "backendError", "quotaExceeded", "503", "500"))
+            if attempt < 3 and transient:
+                await asyncio.sleep(backoff)
+                backoff *= 2
+                continue
+            raise

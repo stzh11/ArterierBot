@@ -43,10 +43,11 @@ async def fetch_photo_bytes_verbose(bot: Bot, file_id: str, user_id:str = "", fo
     log.info("[TG] fetch photo: file_id=%s", file_id)
     tg_file = await bot.get_file(file_id)
     log.info("[TG] photo path=%s file_id=%s", tg_file.file_path, tg_file.file_id)
-    bio = await bot.download_file(tg_file.file_path)  # BytesIO
+    bio = await bot.download_file(tg_file.file_path)  
     data = bio.getvalue()
-    folder_son_id = ensure_folder_by_name(service=service, folder_name=f"{file_name}_{user_id}", parent_id=folder_id)
-    upload_bytes_to_folder(filename=f"{file_name}_{user_id}", data = data, folder_id=folder_son_id, service=service)["webViewLink"]
+    folder_son_id = await ensure_folder_by_name(service=service, folder_name=f"{file_name}_{user_id}", parent_id=folder_id)
+    print("folder_son_id", folder_son_id)
+    await upload_bytes_to_folder(filename=f"{file_name}_{user_id}", data = data, folder_id=folder_son_id, service=service)
     return f"https://drive.google.com/drive/folders/{folder_son_id}"
 
 async def fetch_document_bytes_verbose(bot: Bot, file_id: str, name: str, mime: str):

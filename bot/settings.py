@@ -31,8 +31,6 @@ class Settings:
     ]
     MAX_FILES = 5
 
-    # Кнопки вопросов
-
     q1_options = [
         ("yes", "Да"),
         ("no", "Нет"),

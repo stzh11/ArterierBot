@@ -291,7 +291,7 @@ class FormQuestions:
                 back_value="q14_delivery_country", 
                 back_text=buttons["back"], 
                 done_text=buttons["done"], 
-                rows=[1,1,1,1,1,1,1,1,2,2,2],
+                rows=[1,1,1,1,1,1,1,1,1,2,2,2],
             )
         )
         await state.set_state(SurveyStates.q15_hobbies)

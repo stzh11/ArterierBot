@@ -4,9 +4,11 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from routers.user import user_router
 import asyncio
 import logging
+from utils.drive import service
 
 bot = Bot("8333896356:AAERB58Gb6k6scltmwf25j053nShy49NySo")
 dp = Dispatcher(storage=MemoryStorage())
+
 
 
 dp.include_router(user_router)

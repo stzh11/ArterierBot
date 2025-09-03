@@ -1,8 +1,6 @@
 
 from pathlib import Path
-from utils.sheets import init_sheets
 
-SHEET = init_sheets("Arterier Survey Results")
 
 BASE_DIR = Path(__file__).parent.parent
 images_path = Path(__file__).parent.parent / "static" / "images"
@@ -13,8 +11,10 @@ class Settings:
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
     ]
-    DRIVE_FOLDER_Q7 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
-    DRIVE_FOLDER_Q12 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
+    DRIVE_FOLDER_Q7 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
+    DRIVE_FOLDER_Q12 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
+    GOOGLE_AUTH_TOKEN_PATH = BASE_DIR / "bot/token.json"
+    GOOGLE_CLIENT_SECRET_PATH = BASE_DIR / "client_secret.json"
     Q5_IMAGES = {
     "mono":     BASE_DIR  / "static" / "images" / "mono.jpg",
     "warm":     BASE_DIR  / "static" / "images" / "warm.jpg",

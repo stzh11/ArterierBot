@@ -1,42 +1,12 @@
 
 from io import BytesIO
-import os
 import asyncio
-from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request as GoogleRequest
+from utils.drive import service
 
 
 
-SCOPES = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/spreadsheets",
-    ]
-
-TOKEN_PATH = "/Users/stepanzukov/Desktop/Projects/Arterier/bot/token.json"
-CLIENT_SECRET_PATH = "/Users/stepanzukov/Desktop/Projects/Arterier/client_secret.json"
-
-
-def get_drive_service():
-    creds = None
-    if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(GoogleRequest())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_PATH, "w", encoding="utf-8") as f:
-            f.write(creds.to_json())
-
-    return build("drive", "v3", credentials=creds)
-
-
-
-async def ensure_folder_by_name(service, folder_name: str, parent_id: str | None = None) -> str:
+async def ensure_folder_by_name( folder_name: str, parent_id: str | None = None, service=service) -> str:
     def _sync():
         FOLDER_MIME = "application/vnd.google-apps.folder"
 
@@ -89,11 +59,11 @@ async def ensure_folder_by_name(service, folder_name: str, parent_id: str | None
 
 
 async def upload_bytes_to_folder(
-    service,
     data: bytes,
     filename: str,
     folder_id: str,
     mime_type: str = "application/octet-stream",
+    service=service,
 ):
     def _sync():
         file_obj = BytesIO(data)
@@ -108,4 +78,3 @@ async def upload_bytes_to_folder(
 
     return await asyncio.to_thread(_sync)
 
-service = get_drive_service()

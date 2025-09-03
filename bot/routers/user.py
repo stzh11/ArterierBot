@@ -6,14 +6,13 @@ from aiogram import Router, F
 from keyboards.user import survey_button, q5_done_kb, q5_toggle_kb, multi_choice_kb
 from aiogram.enums.parse_mode import ParseMode
 from states.states import SurveyStates
-from settings import Settings, SHEET
+from settings import Settings
 import asyncio
 from routers import user_form
 from utils.sheets import save_survey
-from utils.helpers import format_survey_for_sheets, fetch_photo_bytes_verbose
-from utils.localization import localize_options, kb_texts, question_text
+from utils.helpers import format_survey_for_sheets, fetch_photo_bytes_verbose, first_link
+from utils.localization import localize_options, kb_texts
 import logging
-from aiogram.types.error_event import ErrorEvent
 
 
 user_router = Router()
@@ -627,7 +626,7 @@ async def q15_hobbies_handl(cq: CallbackQuery, state: FSMContext):
         lang = data["lang"]
         opts = localize_options(lang=lang, group_key="q15_options")
         buttons = kb_texts(lang)
-        kb = await multi_choice_kb(selected=selected, options=opts, back_value="q14_delivery_country", rows=[1,1,1,1,1,1,1,1,2,2,2],  back_text=buttons["back"], done_text=buttons["done"])
+        kb = await multi_choice_kb(selected=selected, options=opts, back_value="q14_delivery_country", rows=[1,1,1,1,1,1,1,1,1,2,2,2],  back_text=buttons["back"], done_text=buttons["done"])
         await cq.message.edit_reply_markup(reply_markup=kb)
     except Exception:
         await cq.message.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
@@ -657,7 +656,7 @@ async def q16_contact_method_handl(cq: CallbackQuery, state: FSMContext):
 async def q17_contact_details_handl(message: Message, state: FSMContext):
     await state.update_data(q17_contact_details=message.text)
     snapshot = await state.get_data()  # снимок данных на сейчас
-
+    print(snapshot)
     await message.answer(
         "Спасибо! Мы вернемся с тремя вариантами для обратной связи в течение 72 часов. "
         "В рамках бесплатного теста мы предлагаем 5 работ различных художников."
@@ -668,34 +667,36 @@ async def q17_contact_details_handl(message: Message, state: FSMContext):
             q12_ids = [x["file_id"] for x in snapshot.get("q12_interior_photos", []) if isinstance(x, dict) and x.get("file_id")]
             q7_ids  = [x["file_id"] for x in snapshot.get("q7_references", [])        if isinstance(x, dict) and x.get("file_id")]
 
-            async def up_q7(fid: str):
-                return await fetch_photo_bytes_verbose(
-                    file_id=fid, bot=message.bot, user_id=message.from_user.id,
-                    folder_id=Settings.DRIVE_FOLDER_Q7, file_name="q7_reference"
-                )
 
-            async def up_q12(fid: str):
-                return await fetch_photo_bytes_verbose(
-                    file_id=fid, bot=message.bot, user_id=message.from_user.id,
-                    folder_id=Settings.DRIVE_FOLDER_Q12, file_name="q12_interier"
-                )
 
-            q7_res  = await asyncio.gather(*(up_q7(i)  for i in q7_ids),  return_exceptions=True)
-            q12_res = await asyncio.gather(*(up_q12(i) for i in q12_ids), return_exceptions=True)
+            if q7_ids != []:
+                async def up_q7(fid: str):
+                    return await fetch_photo_bytes_verbose(
+                        file_id=fid, bot=message.bot, user_id=message.from_user.id,
+                        folder_id=Settings.DRIVE_FOLDER_Q7, file_name="q7_reference"
+                    )
+                q7_res  = await asyncio.gather(*(up_q7(i)  for i in q7_ids),  return_exceptions=True)
+                q7_link  = first_link(q7_res)
+                await state.update_data(q7_folder_link=q7_link)
+            else:
+                await state.update_data(q7_folder_link="фото не добавлены")
 
-            def first_link(lst):
-                for r in lst:
-                    if isinstance(r, str) and r:
-                        return r
-                return ""
+            if q12_ids != []:
+                async def up_q12(fid: str):
+                    return await fetch_photo_bytes_verbose(
+                        file_id=fid, bot=message.bot, user_id=message.from_user.id,
+                        folder_id=Settings.DRIVE_FOLDER_Q12, file_name="q12_interier"
+                    )
+                q12_res = await asyncio.gather(*(up_q12(i) for i in q12_ids), return_exceptions=True)
+                q12_link = first_link(q12_res)
+                await state.update_data(q12_folder_link=q12_link)
+            else:
+                await state.update_data(q12_folder_link="фото не добавлены")
 
-            q7_link  = first_link(q7_res)
-            q12_link = first_link(q12_res)
-            await state.update_data(q7_folder_link=q7_link, q12_folder_link=q12_link)
+
             data_for_sheet = format_survey_for_sheets(data=await state.get_data())
 
             await save_survey(
-                SHEET,
                 data=data_for_sheet,
                 user_id=message.from_user.id,
                 username=message.from_user.username,

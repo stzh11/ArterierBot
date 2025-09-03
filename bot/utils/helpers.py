@@ -2,7 +2,8 @@ import io
 from aiogram import Bot
 from settings import Settings
 import logging
-from utils.upload import upload_bytes_to_folder, ensure_folder_by_name, service
+from utils.upload import upload_bytes_to_folder, ensure_folder_by_name
+
 log = logging.getLogger(__name__)
 def format_survey_for_sheets(data: dict) -> dict:
     mapping = {
@@ -10,6 +11,7 @@ def format_survey_for_sheets(data: dict) -> dict:
         "q2_expertise": Settings.q2_options,
         "q3_difficulties": Settings.q3_options,
         "q4_what_to_search": Settings.q4_options,
+        "q4_goal": Settings.q4_goal_options,
         "q5_colors": Settings.q5_options,
         "q10_size": Settings.q10_options,
         "q11_format": Settings.q11_options,
@@ -45,9 +47,9 @@ async def fetch_photo_bytes_verbose(bot: Bot, file_id: str, user_id:str = "", fo
     log.info("[TG] photo path=%s file_id=%s", tg_file.file_path, tg_file.file_id)
     bio = await bot.download_file(tg_file.file_path)  
     data = bio.getvalue()
-    folder_son_id = await ensure_folder_by_name(service=service, folder_name=f"{file_name}_{user_id}", parent_id=folder_id)
+    folder_son_id = await ensure_folder_by_name( folder_name=f"{file_name}_{user_id}", parent_id=folder_id)
     print("folder_son_id", folder_son_id)
-    await upload_bytes_to_folder(filename=f"{file_name}_{user_id}", data = data, folder_id=folder_son_id, service=service)
+    await upload_bytes_to_folder(filename=f"{file_name}_{user_id}", data = data, folder_id=folder_son_id)
     return f"https://drive.google.com/drive/folders/{folder_son_id}"
 
 async def fetch_document_bytes_verbose(bot: Bot, file_id: str, name: str, mime: str):
@@ -58,3 +60,10 @@ async def fetch_document_bytes_verbose(bot: Bot, file_id: str, name: str, mime: 
     data = bio.getvalue()
     log.info("[TG] doc bytes=%d", len(data))
     return {"name": name, "mime": mime or "application/octet-stream", "bytes": data}
+
+
+def first_link(lst):
+    for r in lst:
+        if isinstance(r, str) and r:
+            return r
+    return ""

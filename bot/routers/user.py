@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
-from keyboards.user import survey_button, q5_done_kb, q5_toggle_kb, multi_choice_kb
+from keyboards.user import survey_button, q5_done_kb, q5_toggle_kb, multi_choice_kb, start_survey_button
 from aiogram.enums.parse_mode import ParseMode
 from states.states import SurveyStates
 from settings import Settings
@@ -63,11 +63,43 @@ async def go_back(cq: CallbackQuery, state: FSMContext):
     await state.set_state(new_state)
     await ask_func(cq.message, state)
 
-
 @user_router.message(CommandStart())
-async def start_message(m: Message):
-    button = await survey_button()
-    await m.answer(text = (
+async def start_message_yhandl(message: Message, state: FSMContext):
+    await state.clear()
+    args = message.text.split(maxsplit=1)
+    print(args)
+    if len(args) > 1:
+        payload = args[1]
+        await state.update_data(utm_source=payload)
+    else:
+        await state.update_data(utm_source="Переход по неизвестной ссылке или опрос пройден повторно")
+    try:
+        await message.answer(
+            "Выберите язык / Choose language",
+            reply_markup= await survey_button()
+        )
+    except Exception as e:
+        await message.answer(
+            "Something went wrong, restart the survey or click back button."
+        )
+
+
+@user_router.callback_query((F.data == "lang:ru") | (F.data == "lang:en"))
+async def start_survey_message(cq: CallbackQuery, state: FSMContext):
+
+    lang = cq.data[5:] if cq.data and cq.data.startswith("lang:") else None
+    if lang not in {"ru", "en"}:
+        await cq.answer("Некорректный выбор языка.", show_alert=True)
+        return
+    await state.update_data(lang=lang)
+
+    try:
+        await cq.message.edit_reply_markup()
+    except Exception:
+        pass
+    if lang == "ru":
+        start_button_text = "Начать опрос"
+        await cq.message.answer(text = (
                         "<b>Настоящее искусство</b> – это погружение в чувства, эмоции и воспоминания. "
                         "Но самостоятельно выбрать что-то для своего дома бывает очень сложно и требует много времени.\n\n"
                         "Мы создали <b>Arterier</b>, чтобы Вы могли создать свой мир чувств и ощущений с помощью "
@@ -84,28 +116,32 @@ async def start_message(m: Message):
                         "или обратиться к нам за организацией примерки и покупки.\n\n"
                         "<i>Arterier – Ваш куратор в мире искусства</i>\n"
                         "<i>и это сообщение тоже</i>"), 
-                    parse_mode=ParseMode("HTML"))
-    await m.answer("Для того чтобы начать опрос выберите язык.", reply_markup=button)
+                    parse_mode=ParseMode("HTML"), reply_markup= await start_survey_button(button_text=start_button_text))
+    else: 
+        start_button_text = "Start survey"
+        await cq.message.answer(text=(
+                        "<b>True art</b> is an immersion into feelings, emotions, and memories. "
+                        "But choosing something for your home on your own can be very difficult and time-consuming.\n\n"
+                        "We created <b>Arterier</b> so that you can build your own world of feelings and impressions with the help of real works of art in your home. "
+                        "Tell us your story, and we will select artworks that highlight the individuality of your space.\n\n"
+                        "We work together with <b>professional gallerists</b>, interior designers, "
+                        "and use <b>artificial intelligence</b> to help you make a choice among hundreds of options.\n\n"
+                        "<b>How it works:</b>\n\n"
+                        "1️⃣ Fill out the survey, and we will find suitable options for you in local galleries to clarify your preferences and wishes.\n\n"
+                        "2️⃣ We go through three iterations to get closer to your expectations.\n\n"
+                        "3️⃣ You can either order the chosen artwork yourself "
+                        "or ask us to arrange a fitting and purchase.\n\n"
+                        "<i>Arterier – Your curator in the world of art</i>\n"
+                        "<i>and this message too</i>"
+                    ),
+                    parse_mode=ParseMode("HTML"), reply_markup= await start_survey_button(button_text=start_button_text)
+                )
+
     
 
-@user_router.callback_query((F.data == "lang:ru") | (F.data == "lang:en"))
+@user_router.callback_query(F.data == "survey_start")
 async def start_survey_handl(cq: CallbackQuery, state: FSMContext):
-    try:
-        await state.clear()
-        lang = cq.data[5:] if cq.data and cq.data.startswith("lang:") else None
-        if lang not in {"ru", "en"}:
-            await cq.answer("Некорректный выбор языка.", show_alert=True)
-            return
-        await state.update_data(lang=lang)
-        await cq.answer()
-        try:
-            await cq.message.edit_reply_markup()
-        except Exception:
-            pass
-        await user_form.FormQuestions.ask_q1(cq.message, state)
-    except Exception as e:
-        await cq.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
-
+    await user_form.FormQuestions.ask_q1(cq.message, state)
 
 @user_router.callback_query(SurveyStates.q1_bought_art)
 async def q1_bought_art_handl(cq: CallbackQuery, state: FSMContext):

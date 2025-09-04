@@ -12,7 +12,7 @@ HEADERS = [
     "timestamp","user_id","username","q1_bought_art","q2_expertise","q3_difficulties",
     "q4_goal","q4_what_to_search","q5_colors","q6_favorite_authors","q7_references",
     "q8_mood","q9_wishes","q10_size","q11_format","q12_interior_photos",
-    "q13_budget","q14_delivery_country","q15_hobbies","q16_contact_method","q17_contact_details",
+    "q13_budget","q14_delivery_country","q15_hobbies","q16_contact_method","q17_contact_details", "utm_source"
 ]
 
 def _join(v):
@@ -123,6 +123,7 @@ async def save_survey(*, data: dict, user_id: int, username: str | None, ws=SHEE
         _join(data.get("q15_hobbies")),
         data.get("q16_contact_method",""),
         data.get("q17_contact_details",""),
+        data.get("utm_source", "")
     ]
     # выравниваем длину ровно под шапку
     if len(row) < len(HEADERS):

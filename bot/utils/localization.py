@@ -4,7 +4,6 @@ DEFAULT_LANG = "ru"
 
 
 def norm_lang(code: str | None) -> str:
-    print(code)
     if not code:
         return DEFAULT_LANG
     code = code.lower()
@@ -23,8 +22,6 @@ def question_text(lang: str, key: str,) -> str:
 def localize_options(lang: str, group_key: str) -> list[tuple[str, str]]:
     lang = norm_lang(lang)
     options_dict = Settings.LOCALES.get(lang, {}).get(group_key) or Settings.LOCALES[DEFAULT_LANG].get(group_key) 
-    print(options_dict)
-    print("ndkagfegicw", list(options_dict.items()))
     return list(options_dict.items())
 
 

@@ -8,7 +8,8 @@ async def survey_button() -> InlineKeyboardBuilder:
     kb.button(text="🇬🇧 English", callback_data="lang:en")
     return kb.as_markup()
 
-
+async def start_survey_button(button_text: str) -> InlineKeyboardBuilder:
+    return InlineKeyboardBuilder().button(text=button_text, callback_data="survey_start").as_markup()
 
 async def one_choice_kb(options: set,
                         back_value: str = None, 

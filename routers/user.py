@@ -10,7 +10,7 @@ from settings import Settings
 import asyncio
 from routers import user_form
 from utils.sheets import save_survey
-from utils.helpers import format_survey_for_sheets, fetch_photo_bytes_verbose, first_link
+from utils.helpers import format_survey_for_sheets, fetch_photo_bytes_verbose, first_link, notify_admins
 from utils.localization import localize_options, kb_texts
 import logging
 
@@ -209,7 +209,7 @@ async def q3_difficulties_handl(cq: CallbackQuery, state: FSMContext):
         lang = data["lang"]
         opts = localize_options(lang=lang, group_key="q3_options")
         buttons = kb_texts(lang=lang)
-        kb = await multi_choice_kb(selected=selected, options=opts, rows=[1, 1, 1, 1, 1, 2], back_value="q2_expertise", back_text=buttons["back"], done_text=buttons["done"])
+        kb = await multi_choice_kb(selected=selected, options=opts, rows=[1, 1, 1, 1, 1, 1, 2], back_value="q2_expertise", back_text=buttons["back"], done_text=buttons["done"])
         await state.update_data(q3_difficulties=list(selected))
         await cq.message.edit_reply_markup(reply_markup=kb)
     except Exception:
@@ -703,7 +703,7 @@ async def q17_contact_details_handl(message: Message, state: FSMContext):
             q12_ids = [x["file_id"] for x in snapshot.get("q12_interior_photos", []) if isinstance(x, dict) and x.get("file_id")]
             q7_ids  = [x["file_id"] for x in snapshot.get("q7_references", [])        if isinstance(x, dict) and x.get("file_id")]
 
-
+            print(q7_ids)
 
             if q7_ids != []:
                 async def up_q7(fid: str):
@@ -731,12 +731,19 @@ async def q17_contact_details_handl(message: Message, state: FSMContext):
 
 
             data_for_sheet = format_survey_for_sheets(data=await state.get_data())
-
+            print("data for sheet", data_for_sheet)
             await save_survey(
                 data=data_for_sheet,
                 user_id=message.from_user.id,
                 username=message.from_user.username,
             )
+
+            await notify_admins(
+                    bot=message.bot,
+                    data=data_for_sheet,
+                    username=message.from_user.username,
+                    user_id=message.from_user.id,
+                )
         except Exception:
             logging.exception("Finalize submission failed")
 

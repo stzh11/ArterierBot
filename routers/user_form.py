@@ -1,5 +1,5 @@
 # ask_questions.py
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from states.states import SurveyStates
 from utils.localization import localize_options, kb_texts, question_text
@@ -66,7 +66,7 @@ class FormQuestions:
             reply_markup=await multi_choice_kb(
                 options=opts,
                 selected=set(),
-                rows=[1, 1, 1, 1, 1, 2],
+                rows=[1, 1, 1, 1, 1, 1, 2],
                 back_text=buttons["back"],        
                 back_value="q2_expertise",
                 done_text=buttons["done"]
@@ -110,8 +110,13 @@ class FormQuestions:
         buttons = kb_texts(lang=lang)
         opts = localize_options(lang=lang, group_key="q4_options")
         print(opts)
-        await message.answer(
+        if lang == "ru":
+            photo = FSInputFile("/Users/stepanzukov/Desktop/Projects/Arterier/static/images/q4.png") 
+        else:
+            photo = FSInputFile("/Users/stepanzukov/Desktop/Projects/Arterier/static/images/q4_eng.png") 
+        await message.answer_photo(
             text=text,
+            photo=photo,
             reply_markup=await multi_choice_kb(
                 options=opts,
                 selected=set(),

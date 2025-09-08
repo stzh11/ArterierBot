@@ -72,9 +72,9 @@ def q5_toggle_kb(key: str, selected: set[str], select_text: str = "") -> InlineK
 
 def q5_done_kb(back_value: str = None, back_text: str = "", done_text: str = "") -> InlineKeyboardBuilder:
     kb = InlineKeyboardBuilder()
-    kb.button(text="✅ "+done_text, callback_data="q5:done")
     if back_value:
         kb.button(text="◀️ "+back_text, callback_data=f"back:{back_value}")
+    kb.button(text="✅ "+done_text, callback_data="q5:done")
     return kb.as_markup()
 
 

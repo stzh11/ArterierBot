@@ -11,6 +11,7 @@ class Settings:
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
     ]
+    ADMIN_ACCOUNT_LIST = ["713757386"]
     DRIVE_FOLDER_Q7 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
     DRIVE_FOLDER_Q12 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
     GOOGLE_AUTH_TOKEN_PATH = BASE_DIR / "bot/token.json"
@@ -203,7 +204,7 @@ class Settings:
             "photos": "Photos",
             "posters": "Posters",
             "caricatures": "Caricatures",
-            "sculpture": "Interior sculpture",
+            "sculpture": "Sculptures",
         },
         "q4_goal_options": {
             "single":  "Оne accent piece of art",

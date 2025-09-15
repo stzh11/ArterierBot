@@ -109,7 +109,6 @@ async def _send_album(bot: Bot, chat_id: int, file_ids: list[str], caption: str)
 
 async def notify_admins(bot: Bot, data: dict, username: str | None, user_id: int) -> None:
     pack = await message_for_admin(data, username, user_id)
-    print(pack)
     for admin_id in Settings.ADMIN_ACCOUNT_LIST:
         try:
             await bot.send_message(admin_id, "🆕 Новая анкета:")

@@ -99,45 +99,35 @@ async def start_survey_message(cq: CallbackQuery, state: FSMContext):
         pass
     if lang == "ru":
         start_button_text = "Начать опрос"
-        await cq.message.answer(text = (
-                        "<b>Настоящее искусство</b> – это погружение в чувства, эмоции и воспоминания. "
-                        "Но самостоятельно выбрать что-то для своего дома бывает очень сложно и требует много времени.\n\n"
-                        "Мы создали <b>Arterier</b>, чтобы Вы могли создать свой мир чувств и ощущений с помощью "
-                        "настоящих произведений искусства в вашем доме. "
-                        "Расскажите свою историю, и мы подберем для Вас работы, которые подчеркнут "
-                        "индивидуальность вашего пространства."
-                        "Мы работаем в команде с <b>профессиональными галеристами</b>, дизайнерами интерьеров "
-                        "и привлекаем <b>искусственный интеллект</b>, чтобы помочь вам сделать выбор из сотен вариантов.\n\n"
-                        "<b>Как это работает:</b>\n\n"
-                        "1️⃣ Заполните анкету, и мы подберем для вас подходящие варианты в местных галереях "
-                        "для уточнения направлений и пожеланий.\n\n"
-                        "2️⃣ Мы делаем три итерации, чтобы приблизиться к вашим ожиданиям.\n\n"
-                        "3️⃣ Вы можете самостоятельно заказать выбранный предмет искусства "
-                        "или обратиться к нам за организацией примерки и покупки.\n\n"
-                        "<i>Arterier – Ваш куратор в мире искусства</i>\n"
-                        "<i>и это сообщение тоже</i>"), 
-                    parse_mode=ParseMode("HTML"), reply_markup= await start_survey_button(button_text=start_button_text))
+        await cq.message.answer(text=(
+            "<b>Как это работает:</b>\n\n"
+            "Шаг 1. Ответьте на мои вопросы, и мы подберем первые 5 вариантов. Эти варианты - набросок, этюд, поиск дальнейшего направления. Поэтому...\n\n"
+            "Шаг 2. Нам важно получить вашу искреннюю реакцию, чтобы сделать следующую подборку.\n\n"
+            "Шаг 3. Еще две подборки и два обсуждения, чтобы приблизиться к вашим ожиданиям. Это важный эмоциональный процесс.\n\n"
+            "Шаг 4. Посещение галереи для личного знакомства с выбранными вариантами "
+            "или заказ произведения искусства для примерки в вашем интерьере.\n\n"
+            "Добро пожаловать в мир Вашего искусства!\n\n"
+            "<i>Vero Pure, Ваш личный куратор</i>"
+        ),
+            parse_mode=ParseMode("HTML"),
+            reply_markup=await start_survey_button(button_text=start_button_text)
+        )
     else: 
         start_button_text = "Start survey"
         await cq.message.answer(text=(
-                        "<b>True art</b> is an immersion into feelings, emotions, and memories. "
-                        "But choosing something for your home on your own can be very difficult and time-consuming.\n\n"
-                        "We created <b>Arterier</b> so that you can build your own world of feelings and impressions with the help of real works of art in your home. "
-                        "Tell us your story, and we will select artworks that highlight the individuality of your space.\n\n"
-                        "We work together with <b>professional gallerists</b>, interior designers, "
-                        "and use <b>artificial intelligence</b> to help you make a choice among hundreds of options.\n\n"
-                        "<b>How it works:</b>\n\n"
-                        "1️⃣ Fill out the survey, and we will find suitable options for you in local galleries to clarify your preferences and wishes.\n\n"
-                        "2️⃣ We go through three iterations to get closer to your expectations.\n\n"
-                        "3️⃣ You can either order the chosen artwork yourself "
-                        "or ask us to arrange a fitting and purchase.\n\n"
-                        "<i>Arterier – Your curator in the world of art</i>\n"
-                        "<i>and this message too</i>"
-                    ),
-                    parse_mode=ParseMode("HTML"), reply_markup= await start_survey_button(button_text=start_button_text)
-                )
+            "<b>How it works:</b>\n\n"
+            "Step 1. Answer my questions, and we will select the first 5 options. These options are a sketch, a study, a search for further direction. Therefore...\n\n"
+            "Step 2. We need your sincere reaction in order to create the next selection.\n\n"
+            "Step 3. Two more selections and two discussions to get closer to your expectations. This is an important emotional process.\n\n"
+            "Step 4. Visit a gallery for a personal acquaintance with the chosen works "
+            "or order an artwork to try it out in your interior.\n\n"
+            "Welcome to the world of your art!\n\n"
+            "<i>Vero Pure, your personal curator</i>"
+        ),
+            parse_mode=ParseMode("HTML"),
+            reply_markup=await start_survey_button(button_text=start_button_text)
+        )
 
-    
 
 @user_router.callback_query(F.data == "survey_start")
 async def start_survey_handl(cq: CallbackQuery, state: FSMContext):
@@ -192,7 +182,10 @@ async def q3_difficulties_handl(cq: CallbackQuery, state: FSMContext):
                 await user_form.FormQuestions.ask_q4_goal(cq.message, state)
                 return
             else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                if data["lang"] == "ru":
+                    await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                else:
+                    await cq.answer("Please select at least one option or «Other»", show_alert=True)
                 return
             
         if value == "other":
@@ -232,50 +225,11 @@ async def q3_difficulties_other_text(message: Message, state: FSMContext):
 @user_router.callback_query(SurveyStates.q4_goal)
 async def q4_goal_handl(cq: CallbackQuery, state: FSMContext):
     try:
-        value = cq.data
-        data = await state.get_data()
-        selected = set(data.get("q4_goal", []))
-        if value == "done":
-            if selected:
-                await state.update_data(q4_goal=list(selected))
-                await cq.message.edit_reply_markup()
-                await user_form.FormQuestions.ask_q4(cq.message, state)
-                return
-            else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
-                return
-
-
-        if value == "other":
-            await cq.message.edit_reply_markup()
-            await state.update_data(q4_goal=list(selected))
-            await user_form.FormQuestions.ask_q4_goal_other(cq.message, state)
-            return
-        
-        if value in selected:
-            selected.remove(value)
-        else:
-            selected.add(value)
-        data = await state.get_data()
-        lang = data["lang"]
-        opts = localize_options(lang=lang, group_key="q4_goal_options")
-        buttons = kb_texts(lang=lang)
-        kb = await multi_choice_kb(selected=selected, options=opts, rows=[1, 1, 1, 2], back_value="q3_difficults", back_text=buttons["back"], done_text=buttons["done"])
-        await state.update_data(q4_goal=list(selected))
-        await cq.message.edit_reply_markup(reply_markup=kb)
+        await cq.message.edit_reply_markup()
+        await state.update_data(q4_goal=cq.data)
+        await user_form.FormQuestions.ask_q4(cq.message, state)
     except Exception:
         await cq.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
-
-@user_router.message(SurveyStates.q4_goal_other)
-async def q4_goal_other_handl(message: Message, state: FSMContext):
-    try:
-        data = await state.get_data()
-        selected = set(data.get("q4_goal", []))
-        selected.add(f"other:{message.text.strip()}")
-        await state.update_data(q4_goal=list(selected))
-        await user_form.FormQuestions.ask_q4(message, state)
-    except Exception:
-        await message.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
 
 
 @user_router.callback_query(SurveyStates.q4_what_to_search)
@@ -291,7 +245,10 @@ async def q4_what_to_search_handl(cq: CallbackQuery, state: FSMContext):
                 await user_form.FormQuestions.ask_q5(cq.message, state)
                 return
             else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                if data["lang"] == "ru":
+                    await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                else:
+                    await cq.answer("Please select at least one option or «Other»", show_alert=True)
                 return
 
         if value == "other":
@@ -408,16 +365,31 @@ async def q6_favorite_authors_handl(m: Message, state: FSMContext):
 
 q7_media_groups = defaultdict(list)
 
-@user_router.message(SurveyStates.q7_references, F.media_group_id)
+@user_router.message(SurveyStates.q7_references)
 async def handle_album_part(message: Message, state: FSMContext):
     gid = message.media_group_id
-    q7_media_groups[gid].append(message)
 
-    await asyncio.sleep(0.5)
+    # Если это альбом
+    if gid:
+        q7_media_groups[gid].append(message)
+        await asyncio.sleep(0.5)
 
-    if q7_media_groups.get(gid):
-        msgs = q7_media_groups.pop(gid)
-        await process_q7(msgs, state, tail=message)
+        if q7_media_groups.get(gid):
+            msgs = q7_media_groups.pop(gid)
+            await process_q7(msgs, state, tail=message)
+
+    # Если это одиночное фото
+    elif message.photo:
+        await process_q7([message], state, tail=message)
+
+    # Если это не фото
+    else:
+        data = await state.get_data()
+        if data.get("lang") == "ru":
+            await message.answer("Пришлите одну или несколько фото (одним сообщением или альбомом)")
+        else:
+            await message.answer("Send one or more photos (in a single message or as an album)")
+
 
 
 @user_router.message(SurveyStates.q7_references, (F.photo | F.document))
@@ -429,7 +401,6 @@ async def process_q7(messages: list[Message], state: FSMContext, tail: Message):
     try: 
         data = await state.get_data()
         files: list = data.get("q7_references", [])
-
         for m in messages:
             if len(files) >= Settings.MAX_FILES:
                 break
@@ -441,11 +412,16 @@ async def process_q7(messages: list[Message], state: FSMContext, tail: Message):
                 files.append({"kind": "document", "file_id": d.file_id, "name": d.file_name})
 
         await state.update_data(q7_references=files)
-
+        print(files)
         if len(files) <= Settings.MAX_FILES:
             await user_form.FormQuestions.ask_q8(tail, state)
         else:
-            await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
+            if data["lang"] == "ru":
+                await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
+            else:
+                await tail.answer(
+                    "You have added more than 5 photos. Please attach no more than 5 photos or press the skip button.")
+
     except Exception:
         await tail.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
 
@@ -481,7 +457,10 @@ async def q10_size_handl(cq: CallbackQuery, state: FSMContext):
                 await user_form.FormQuestions.ask_q11(cq.message, state)
                 return
             else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                if data["lang"] == "ru":
+                    await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                else:
+                    await cq.answer("Please select at least one option or «Other»", show_alert=True)
                 return
             
         if value == "other":
@@ -531,7 +510,10 @@ async def q11_format_handl(cq: CallbackQuery, state: FSMContext):
                 await user_form.FormQuestions.ask_q12(cq.message, state)
                 return
             else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                if data["lang"] == "ru":
+                    await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                else:
+                    await cq.answer("Please select at least one option or «Other»", show_alert=True)
                 return
             
         if value == "other":
@@ -570,16 +552,29 @@ async def q11_format_other_text(message: Message, state: FSMContext):
 
 q12_media_groups = defaultdict(list)
 
-@user_router.message(SurveyStates.q12_interior_photos, F.media_group_id)
+@user_router.message(SurveyStates.q12_interior_photos)
 async def handle_album_part(message: Message, state: FSMContext):
     gid = message.media_group_id
-    q12_media_groups[gid].append(message)
 
-    await asyncio.sleep(0.5)
 
-    if q12_media_groups.get(gid):
-        msgs = q12_media_groups.pop(gid)
-        await process_q12(msgs, state, tail=message)
+    if gid:
+        q12_media_groups[gid].append(message)
+        await asyncio.sleep(0.5)
+
+        if q12_media_groups.get(gid):
+            msgs = q12_media_groups.pop(gid)
+            await process_q12(msgs, state, tail=message)
+
+
+    elif message.photo:
+        await process_q12([message], state, tail=message)
+
+    else:
+        data = await state.get_data()
+        if data.get("lang") == "ru":
+            await message.answer("Пришлите одну или несколько фотографий (одним сообщением или альбомом)")
+        else:
+            await message.answer("Send one or more photos (in a single message or as an album)")
 
 
 @user_router.message(SurveyStates.q12_interior_photos, (F.photo | F.document))
@@ -607,7 +602,12 @@ async def process_q12(messages: list[Message], state: FSMContext, tail: Message)
         if len(files) <= Settings.MAX_FILES:
             await user_form.FormQuestions.ask_q13(tail, state)
         else:
-            await tail.answer(f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
+            if data["lang"] == "ru":
+                await tail.answer(
+                    f"Вы добавили больше 5 фото, пожалуйста прикрепите не более 5 фотографий или нажмите кнопку пропустить.")
+            else:
+                await tail.answer(
+                    "You have added more than 5 photos. Please attach no more than 5 photos or press the skip button.")
     except Exception:
         await tail.answer("Something went wrong, restart the survey or click back button.", show_alert=True)
 
@@ -643,7 +643,10 @@ async def q15_hobbies_handl(cq: CallbackQuery, state: FSMContext):
                 await user_form.FormQuestions.ask_q16(cq.message, state)
                 return
             else:
-                await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                if data["lang"] == "ru":
+                    await cq.answer("Выберите хотя бы один вариант или «Другое»", show_alert=True)
+                else:
+                    await cq.answer("Please select at least one option or «Other»", show_alert=True)
                 return
             
         if value == "other":
@@ -693,15 +696,17 @@ async def q17_contact_details_handl(message: Message, state: FSMContext):
     await state.update_data(q17_contact_details=message.text)
     snapshot = await state.get_data()  # снимок данных на сейчас
     print(snapshot)
-    await message.answer(
-        "Спасибо! Мы вернемся с тремя вариантами для обратной связи в течение 72 часов. "
-        "В рамках бесплатного теста мы предлагаем 5 работ различных художников."
-    )
+    if snapshot.get("lang") == "ru":
+        await message.answer(
+            "Спасибо! Мы вернемся с пятью вариантами в течение 72 часов.")
+    else:
+        await message.answer(
+            "Thank you! We will get back to you with five options within 72 hours.")
 
     async def bg_finalize():
         try:
             q12_ids = [x["file_id"] for x in snapshot.get("q12_interior_photos", []) if isinstance(x, dict) and x.get("file_id")]
-            q7_ids  = [x["file_id"] for x in snapshot.get("q7_references", [])        if isinstance(x, dict) and x.get("file_id")]
+            q7_ids = [x["file_id"] for x in snapshot.get("q7_references", []) if isinstance(x, dict) and x.get("file_id")]
 
             print(q7_ids)
 

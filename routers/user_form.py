@@ -44,8 +44,7 @@ class FormQuestions:
         await message.answer(
             text,
             reply_markup=await one_choice_kb(
-                opts,
-                rows=[2, 2, 1, 1],
+                options=opts,
                 back_value="q1_bought_art",
                 back_text=buttons["back"]
             )
@@ -87,13 +86,11 @@ class FormQuestions:
         print(opts)
         await message.answer(
             text=text,
-            reply_markup=await multi_choice_kb(
+            reply_markup=await one_choice_kb(
                 options=opts,
-                selected=set(),
-                rows=[1,1,1,2],
+                rows=[2, 2, 2, 1, 1, 2],
                 back_value="q3_difficulties",
                 back_text=buttons["back"],
-                done_text=buttons["done"]
             )
         )
         await state.set_state(SurveyStates.q4_goal)
@@ -115,7 +112,7 @@ class FormQuestions:
         else:
             photo = FSInputFile("/Users/stepanzukov/Desktop/Projects/Arterier/static/images/q4_eng.png") 
         await message.answer_photo(
-            text=text,
+            caption=text,
             photo=photo,
             reply_markup=await multi_choice_kb(
                 options=opts,
@@ -264,7 +261,7 @@ class FormQuestions:
             text=text,
             reply_markup=await one_choice_kb(
                 options=opts,
-                back_value="q12_interior_photos", back_text=buttons["back"], rows=[2,2,1,1]
+                back_value="q12_interior_photos", back_text=buttons["back"]
             )
         )
         await state.set_state(SurveyStates.q13_budget)

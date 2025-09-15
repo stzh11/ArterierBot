@@ -6,12 +6,12 @@ BASE_DIR = Path(__file__).parent
 images_path = Path(__file__).parent.parent / "static" / "images"
 
 class Settings:
-    BOT_TOKEN = "8333896356:AAERB58Gb6k6scltmwf25j053nShy49NySo"
+    BOT_TOKEN = "8450528872:AAEF5g3A5tOadbhUx7mSKNmi3vps5vBLSwM"
     SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
     ]
-    ADMIN_ACCOUNT_LIST = ["713757386"]
+    ADMIN_ACCOUNT_LIST = ["470629740"]
     DRIVE_FOLDER_Q7 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
     DRIVE_FOLDER_Q12 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"
     GOOGLE_AUTH_TOKEN_PATH = BASE_DIR / "bot/token.json"
@@ -38,11 +38,11 @@ class Settings:
         ("other", "Другое")
     ]  
     q2_options = [
-        ("def_yes", "Точно да"),
-        ("rather_yes", "Скорее да"),
-        ("rather_no", "Скорее нет"),
-        ("def_no", "Точно нет"),
+        ("def_yes", "Я - профессионал"),
+        ("rather_yes", "Скорее хорошо"),
         ("hard_to_say", "Затрудняюсь ответить"),
+        ("rather_no", "Скорее не разбираюсь"),
+        ("def_no", "Ничего в нем не понимаю"),
     ]
     q3_options = [
         ("time", "Требует слишком много времени на выбор"),
@@ -61,9 +61,14 @@ class Settings:
         ("sculpture", "Скульптуры"),
     ]
     q4_goal_options = [
-        ("single",  "Одно акцентное произведение искусства"),
-        ("curated", "Кураторский подбор для всего интерьера"),
-        ("other",   "Ваш вариант?"),
+        ("living_room", "В гостинной"),
+        ("bedroom", "В спальне"),
+        ("hall", "В прихожей"),
+        ("children_room", "В детской"),
+        ("work_room", "В кабинете"),
+        ("office", "В офисе"),
+        ("single",  "Для всего дома / квартиры"),
+        ("curated", "Для общественных / деловых помещений"),
     ]
     q10_options = [
         ("10x20", "10 x 20 см"),
@@ -84,21 +89,21 @@ class Settings:
         ("other", "Другое"),
     ]
     q13_options = [
-        ("<1000", "< 1,000 $/€"),
-        ("1000-2499", "1,000-2,499 $/€"),
-        ("2500-4999", "2,500-4,999 $/€"),
-        ("5000-10000", "5,000-10,000 $/€"),
-        (">10000", ">10,000 $/€"),
+        ("<1000", "< 100,000 ₽"),
+        ("1000-2499", "100,000-250,000 ₽"),
+        ("2500-4999", "250,000-500,000 ₽"),
+        ("5000-10000", "500,000-1,000,000 ₽"),
+        (">10000", "> 1,000,000 ₽"),
     ]
     q15_options = [
         ("team_sport", "Командные виды спорта"),
         ("ind_sport", "Индивидуальный спорт"),
         ("extreme_sport", "Экстремальный спорт"),
         ("finance", "Финансы и инвестиции"),
-        ("concerts", "Посещение концертов"),
-        ("theatre", "Посещение театров и музеев"),
-        ("travel", "Путешествия по новым странам"),
         ("extreme_travel", "Экстремальные путешествия"),
+        ("concerts", "Концерты"),
+        ("theatre", "Театры и музеи"),
+        ("travel", "Новые страны"),
         ("nature", "Отдых на природе"),
         ("music", "Музыка"),
         ("books", "Книги"),
@@ -116,27 +121,30 @@ class Settings:
     LOCALES = {
     "ru": {
         # Кнопки
-        "buttons.done": "Готово",
+        "buttons.done": "Дальше",
         "buttons.back": "Назад",
         "buttons.skip": "Пропустить",
         "buttons.select": "Выбрать",
 
         # Тексты вопросов
-        "q1.text":  "Покупали ли Вы когда-нибудь предметы искусства в галереях или у художников?",
-        "q2.text":  "Считаете ли Вы, что разбираетесь в искусстве?",
+        "q1.text":  "Покупали ли Вы когда-нибудь предметы искусства?",
+        "q2.text":  "Насколько хорошо Вы разбираетесь в искусстве?",
         "q3.text":  "Что вызывает наибольшие сложности при выборе произведений искусства для Вашего дома?",
         "q4.text":  "Что будем искать?",
-        "q4_goal.text": "Вы ищите:",
-        "q5.text":  "Какие цвета Вы бы хотели видеть утром, просыпаясь? Выберите понравившиеся картины по цвету.",
+        "q4_goal.text": "Где планируется разместить художественное произведение?",
+        "q5.text":  "Какие цвета Вы хотели бы видеть в своем пространстве каждый день?",
         "q6.text":  "Ваши любимые художники/фотографы/скульпторы? Напишите в одном сообщении.",
-        "q7.text":  "Есть ли у Вас референсы? Пришлите до до 5 фото, можно альбомом.",
+        "q7.text":  "Какими референсами Вам хочется поделиться? Пришлите до 5 фото, можно альбомом.",
         "q8.text":  "Какое настроение Вы хотите создать в этом пространстве?",
-        "q9.text":  "Какие Ваши пожелания мы должны учесть при подборе произведений искусства? Что для Вас важно? Например, Вам больше нравятся сюжетные понятные картины, пейзажи, портреты или абстракция и цвет. Вы можете рассказать о своем отношении к искусству, чтобы мы лучше поняли, что Вы хотели бы чувствовать при взгляде на Ваше новое произведение искусства",
+        "q9.text":  "Какие Ваши пожелания мы должны учесть при подборе произведений искусства? Что для Вас важно? "
+        "Вам больше нравятся сюжетные понятные картины, пейзажи, портреты или абстракция, фактура, цвет?"
+        "Расскажите о своем отношении к искусству, что-то важное о себе и об интерьере, чтобы мы лучше Вас поняли."
+        "чувствовать при взгляде на Ваше новое произведение искусства",
         "q10.text": "Какой размер пространства хочется украсить?",
-        "q11.text": "Желаемый формат:",
-        "q12.text": "Загрузите фото интерьера (до 5 фото, можно альбомом).",
-        "q13.text": "Какой ориентировочный бюджет?",
-        "q14.text": "Страна доставки:",
+        "q11.text": "Выберите подходящий размер произведения искусства:",
+        "q12.text": "Вы можете загрузить до 5 фотографий интерьера.",
+        "q13.text": "Ваш ориентировочный бюджет?",
+        "q14.text": "В какой город надо доставить Ваше произведение искусства?",
         "q15.text": "Ваши хобби и увлечения:",
         "q16.text": "Как предпочитаете получать предложения?",
         "q17.text": "Оставьте контакт (ник в Telegram / номер / email):",
@@ -156,26 +164,28 @@ class Settings:
     },
 
     "en": {
-        "buttons.done": "Done",
+        "buttons.done": "Next",
         "buttons.back": "Back",
         "buttons.skip": "Skip",
         "buttons.select": "Select",
 
-        "q1.text":  "Have you ever bought art in galleries or from artists?",
-        "q2.text":  "Do you consider yourself knowledgeable about art?",
+        "q1.text":  "Have you ever bought art?",
+        "q2.text":  "How well do you know art?",
         "q3.text":  "What is most challenging when choosing art for your home?",
         "q4.text":  "What shall we look for?",
-        "q4_goal.text": "You find:",
-        "q5.text":  "Which colors would you like to see in the morning? Pick by color.",
+        "q4_goal.text": "Where is the artwork planned to be placed?",
+        "q5.text":  "What colors would you like to see in your space every day?",
         "q6.text":  "Your favorite artists/photographers/sculptors? Write in one message.",
-        "q7.text":  "Do you have references? Send photos (up to 5, may be an album).",
+        "q7.text":  "What references would you like to share? Send photos (up to 5, may be an album).",
         "q8.text":  "What mood would you like to create in this space?",
-        "q9.text":  "What preferences should we take into account when selecting artworks for you? What is important to you? For example, do you prefer narrative and easily understandable paintings, landscapes, portraits, or abstract art and color? You can also share your personal attitude toward art so that we can better understand what you would like to feel when looking at your new piece of art.",
+        "q9.text": "What are your wishes that we should take into account when choosing live art? What is important to you?" 
+        "Do you prefer plot and clear paintings, landscapes, portraits or abstraction, texture, color?" 
+        "Tell us about your attitude to art, something important to you and about the interior, so that we can understand you better.",
         "q10.text": "What size of space would you like to decorate?",
-        "q11.text": "Preferred format:",
-        "q12.text": "Upload interior photos (up to 5, may be an album).",
-        "q13.text": "Approximate budget?",
-        "q14.text": "Delivery country:",
+        "q11.text": "Select the appropriate size of the artwork:",
+        "q12.text": "You can upload up to 5 photos of the interior.",
+        "q13.text": "What is your estimated budget??",
+        "q14.text": "To which city should your piece of art be delivered?",
         "q15.text": "Your hobbies and interests:",
         "q16.text": "How do you prefer to receive proposals?",
         "q17.text": "Leave a contact (Telegram handle / phone / email):",
@@ -184,11 +194,11 @@ class Settings:
             "yes": "Yes", "no": "No", "other": "Other"
         },
         "q2_options": {
-            "def_yes": "Definitely yes",
-            "rather_yes": "Rather yes",
-            "rather_no": "Rather no",
-            "def_no": "Definitely no",
+            "def_yes": "I'm a professional",
+            "rather_yes": "Rather good",
             "hard_to_say": "Hard to say",
+            "rather_no": "I don't really understand it",
+            "def_no": "I don't understand anything about it.",
         },
         "q3_options": {
             "time": "Takes too much time",
@@ -199,7 +209,7 @@ class Settings:
             "other": "Other",
         },
         "q4_options": {
-            "paintings": "Paintings",
+            "paintings": "Paintings         ",
             "graphics": "Graphics",
             "photos": "Photos",
             "posters": "Posters",
@@ -207,9 +217,14 @@ class Settings:
             "sculpture": "Sculptures",
         },
         "q4_goal_options": {
-            "single":  "Оne accent piece of art",
-            "curated": "Сurated selection for the entire interior",
-            "other":   "Other",
+            "living_room": "In the living room",
+            "bedroom": "In the bedroom",
+            "hall": "In the hallway",
+            "children_room": "In the child's room",
+            "work_room": "In the home office",
+            "office": "In the office",
+            "single": "For the whole home / apartment",
+            "curated": "For public / business spaces",
         },
         "q5_options": {
             "mono": "Monochrome",
@@ -248,9 +263,9 @@ class Settings:
             "ind_sport": "Individual sports",
             "extreme_sport": "Extreme sports",
             "finance": "Finance & investing",
-            "concerts": "Going to concerts",
+            "concerts": "Concerts",
             "theatre": "Theatres & museums",
-            "travel": "Travelling to new countries",
+            "travel": "New countries",
             "extreme_travel": "Extreme travelling",
             "nature": "Outdoor recreation",
             "music": "Music",

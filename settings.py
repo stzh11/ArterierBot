@@ -6,11 +6,13 @@ BASE_DIR = Path(__file__).parent
 images_path = Path(__file__).parent.parent / "static" / "images"
 
 class Settings:
-    BOT_TOKEN = "8450528872:AAEF5g3A5tOadbhUx7mSKNmi3vps5vBLSwM"
+    BOT_TOKEN = "8333896356:AAERB58Gb6k6scltmwf25j053nShy49NySo"
     SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
     ]
+    Q4_IMG_PATH = BASE_DIR / "static" / "images" / "q4.png"
+    Q4_ENG_IMG_PATH = BASE_DIR / "static" / "images" / "q4_eng.png"
     ADMIN_ACCOUNT_LIST = ["470629740"]
     DRIVE_FOLDER_Q7 = "1KanZ-MJB-7vQSIgEzFFg-ihuyvUKzI3y"
     DRIVE_FOLDER_Q12 = "1Adi8_J-RV3HRECOI-FfKrLEEPbB0_cTv"

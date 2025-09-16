@@ -108,9 +108,10 @@ class FormQuestions:
         opts = localize_options(lang=lang, group_key="q4_options")
         print(opts)
         if lang == "ru":
-            photo = FSInputFile("/Users/stepanzukov/Desktop/Projects/Arterier/static/images/q4.png") 
+            print("sjbfkhvhcve", str(Settings.Q4_IMG_PATH))
+            photo = FSInputFile(str(Settings.Q4_IMG_PATH))
         else:
-            photo = FSInputFile("/Users/stepanzukov/Desktop/Projects/Arterier/static/images/q4_eng.png") 
+            photo = FSInputFile(str(Settings.Q4_ENG_IMG_PATH))
         await message.answer_photo(
             caption=text,
             photo=photo,

@@ -17,6 +17,7 @@ import logging
 
 user_router = Router()
 
+logging.basicConfig(filename="bot.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s", level=logging.DEBUG)
 
 @user_router.callback_query(F.data == "skip")
 async def skip_question_cb(cq: CallbackQuery, state: FSMContext):
@@ -131,12 +132,14 @@ async def start_survey_message(cq: CallbackQuery, state: FSMContext):
 
 @user_router.callback_query(F.data == "survey_start")
 async def start_survey_handl(cq: CallbackQuery, state: FSMContext):
+    logging.info(msg=f" user {cq.from_user.username} 1 question")
     await user_form.FormQuestions.ask_q1(cq.message, state)
 
 @user_router.callback_query(SurveyStates.q1_bought_art)
 async def q1_bought_art_handl(cq: CallbackQuery, state: FSMContext):
     try:
         value = (cq.data or "").strip()
+        logging.info(msg=f" user {cq.from_user.username} 2 question")
         if not value:
             await cq.answer("Empty selection. Click one of the buttons.", show_alert=True)
             return
@@ -162,6 +165,7 @@ async def q1_other_art_other_handl(message: Message, state: FSMContext):
 @user_router.callback_query(SurveyStates.q2_expertise)
 async def q2_expertise_handl(cq: CallbackQuery, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 3 question")
         await cq.message.edit_reply_markup()
         await state.update_data(q2_expertise=cq.data)
         await user_form.FormQuestions.ask_q3(cq.message, state)
@@ -176,6 +180,7 @@ async def q3_difficulties_handl(cq: CallbackQuery, state: FSMContext):
         data = await state.get_data()
         selected = set(data.get("q3_difficulties", []))
         if value == "done":
+            logging.info(msg=f" user {cq.from_user.username} 4 question")
             if selected:
                 await state.update_data(q3_difficulties=list(selected))
                 await cq.message.edit_reply_markup()
@@ -225,6 +230,7 @@ async def q3_difficulties_other_text(message: Message, state: FSMContext):
 @user_router.callback_query(SurveyStates.q4_goal)
 async def q4_goal_handl(cq: CallbackQuery, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 5 question")
         await cq.message.edit_reply_markup()
         await state.update_data(q4_goal=cq.data)
         await user_form.FormQuestions.ask_q4(cq.message, state)
@@ -240,6 +246,7 @@ async def q4_what_to_search_handl(cq: CallbackQuery, state: FSMContext):
         selected = set(data.get("q4_what_to_search", []))
         if value == "done":
             if selected:
+                logging.info(msg=f" user {cq.from_user.username} 6 question")
                 await state.update_data(q4_what_to_search=list(selected))
                 await cq.message.edit_reply_markup()
                 await user_form.FormQuestions.ask_q5(cq.message, state)
@@ -335,6 +342,7 @@ async def q5_toggle_handl(cq: CallbackQuery, state: FSMContext):
 @user_router.callback_query(SurveyStates.q5_colors, F.data == "q5:done")
 async def q5_done_handl(cq: CallbackQuery, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 7 question")
         await cq.answer()
         data = await state.get_data()
         selected = data.get("q5_colors", [])
@@ -357,6 +365,7 @@ async def q5_done_handl(cq: CallbackQuery, state: FSMContext):
 @user_router.message(SurveyStates.q6_favorite_authors)
 async def q6_favorite_authors_handl(m: Message, state: FSMContext):
     try:
+        logging.info(msg=f" user {m.from_user.username} 8 question")
         await state.update_data(q6_favorite_authors=m.text)
         await user_form.FormQuestions.ask_q7(m, state)
     except Exception:
@@ -368,7 +377,7 @@ q7_media_groups = defaultdict(list)
 @user_router.message(SurveyStates.q7_references)
 async def handle_album_part(message: Message, state: FSMContext):
     gid = message.media_group_id
-
+    logging.info(msg=f" user {message.from_user.username} 9 question")
     # Если это альбом
     if gid:
         q7_media_groups[gid].append(message)
@@ -428,6 +437,7 @@ async def process_q7(messages: list[Message], state: FSMContext, tail: Message):
 @user_router.message(SurveyStates.q8_mood)
 async def q8_mood_handl(m: Message, state: FSMContext):
     try:
+        logging.info(msg=f" user {m.from_user.username} 10 question")
         await state.update_data(q8_mood=m.text)
         await user_form.FormQuestions.ask_q9(m, state)
     except Exception:
@@ -437,6 +447,7 @@ async def q8_mood_handl(m: Message, state: FSMContext):
 @user_router.message(SurveyStates.q9_wishes)
 async def q9_wishes_handl(m: Message, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 11 question")
         await state.update_data(q9_wishes=m.text)
         await user_form.FormQuestions.ask_q10(m, state)
     except Exception:
@@ -451,6 +462,7 @@ async def q10_size_handl(cq: CallbackQuery, state: FSMContext):
         data = await state.get_data()
         selected = set(data.get("q10_size", []))
         if value == "done":
+            logging.info(msg=f" user {cq.from_user.username} 12 question")
             if selected:
                 await state.update_data(q10_size=list(selected))
                 await cq.message.edit_reply_markup()
@@ -504,6 +516,7 @@ async def q11_format_handl(cq: CallbackQuery, state: FSMContext):
         data = await state.get_data()
         selected = set(data.get("q11_format", []))
         if value == "done":
+            logging.info(msg=f" user {cq.from_user.username} 13 question")
             if selected:
                 await state.update_data(q11_format=list(selected))
                 await cq.message.edit_reply_markup()
@@ -556,7 +569,6 @@ q12_media_groups = defaultdict(list)
 async def handle_album_part(message: Message, state: FSMContext):
     gid = message.media_group_id
 
-
     if gid:
         q12_media_groups[gid].append(message)
         await asyncio.sleep(0.5)
@@ -600,6 +612,7 @@ async def process_q12(messages: list[Message], state: FSMContext, tail: Message)
         await state.update_data(q12_interior_photos=files)
 
         if len(files) <= Settings.MAX_FILES:
+            logging.info(msg=f" user {tail.from_user.username} 14 question")
             await user_form.FormQuestions.ask_q13(tail, state)
         else:
             if data["lang"] == "ru":
@@ -614,6 +627,7 @@ async def process_q12(messages: list[Message], state: FSMContext, tail: Message)
 @user_router.callback_query(SurveyStates.q13_budget)
 async def q13_budget_handl(cq: CallbackQuery, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 14 question")
         await state.update_data(q13_budget=cq.data)
         await cq.message.edit_reply_markup()
         await user_form.FormQuestions.ask_q14(cq.message, state)
@@ -623,6 +637,7 @@ async def q13_budget_handl(cq: CallbackQuery, state: FSMContext):
 @user_router.message(SurveyStates.q14_delivery_country)
 async def q14_delivery_country_handl(m: Message, state: FSMContext):
     try:
+        logging.info(msg=f" user {m.from_user.username} 15 question")
         await state.update_data(q14_delivery_country=m.text)
         await user_form.FormQuestions.ask_q15(m, state)
     except Exception:
@@ -638,6 +653,7 @@ async def q15_hobbies_handl(cq: CallbackQuery, state: FSMContext):
         selected = set(data.get("q15_hobbies", []))
         if value == "done":
             if selected:
+                logging.info(msg=f" user {cq.from_user.username} 16 question")
                 await state.update_data(q15_hobbies=list(selected))
                 await cq.message.edit_reply_markup()
                 await user_form.FormQuestions.ask_q16(cq.message, state)
@@ -673,6 +689,7 @@ async def q15_hobbies_handl(cq: CallbackQuery, state: FSMContext):
 @user_router.message(SurveyStates.q15_hobbies_other)
 async def q15_format_other_text(message: Message, state: FSMContext):
     try:
+        logging.info(msg=f" user {message.from_user.username} 17 question")
         data = await state.get_data()
         selected = set(data.get("q15_hobbies", []))
         selected.add(f"other:{message.text.strip()}")
@@ -685,6 +702,7 @@ async def q15_format_other_text(message: Message, state: FSMContext):
 @user_router.callback_query(SurveyStates.q16_contact_method)
 async def q16_contact_method_handl(cq: CallbackQuery, state: FSMContext):
     try:
+        logging.info(msg=f" user {cq.from_user.username} 18 question")
         await state.update_data(q16_contact_method=cq.data)
         await cq.message.edit_reply_markup()
         await user_form.FormQuestions.ask_q17(cq.message, state)

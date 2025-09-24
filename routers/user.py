@@ -447,7 +447,7 @@ async def q8_mood_handl(m: Message, state: FSMContext):
 @user_router.message(SurveyStates.q9_wishes)
 async def q9_wishes_handl(m: Message, state: FSMContext):
     try:
-        logging.info(msg=f" user {cq.from_user.username} 11 question")
+        logging.info(msg=f" user {m.from_user.username} 11 question")
         await state.update_data(q9_wishes=m.text)
         await user_form.FormQuestions.ask_q10(m, state)
     except Exception:

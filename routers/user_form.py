@@ -6,7 +6,12 @@ from utils.localization import localize_options, kb_texts, question_text
 from keyboards.user import one_choice_kb, multi_choice_kb, back_button
 from settings import Settings
 
-
+async def other_value_text(message: Message, state: FSMContext):
+    data = await state.get_data()
+    if data["lang"] == "ru":
+        await message.answer("Напишите ваш вариант ответа 👇")
+    else:
+        await message.answer("Write your answer 👇")
 
 
 class FormQuestions:
@@ -30,7 +35,7 @@ class FormQuestions:
 
    
     async def ask_q1_other(message: Message, state: FSMContext):
-        await message.answer("Напишите свой вариант 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q1_bought_art_other)
 
 
@@ -74,7 +79,7 @@ class FormQuestions:
         await state.set_state(SurveyStates.q3_difficulties)
 
     async def ask_q3_other(message: Message, state: FSMContext):
-        await message.answer("Опишите вашу сложность/вариант 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q3_difficulties_other)
 
     async def ask_q4_goal(message: Message, state: FSMContext):
@@ -96,7 +101,7 @@ class FormQuestions:
         await state.set_state(SurveyStates.q4_goal)
 
     async def ask_q4_goal_other(message: Message, state: FSMContext):
-        await message.answer("Опишите свой вариант 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q4_goal_other)
 
     # === 4 === (мультивыбор)
@@ -208,7 +213,7 @@ class FormQuestions:
         await state.set_state(SurveyStates.q10_size)
 
     async def ask_q10_other(message: Message, state: FSMContext):
-        await message.answer("Напишите свой размер/формулировку 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q10_size_other)
 
 
@@ -233,7 +238,7 @@ class FormQuestions:
         await state.set_state(SurveyStates.q11_format)
 
     async def ask_q11_other(message: Message, state: FSMContext):
-        await message.answer("Опишите желаемый формат 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q11_format_other)
 
 
@@ -300,7 +305,7 @@ class FormQuestions:
         await state.set_state(SurveyStates.q15_hobbies)
 
     async def ask_q15_other(message: Message, state: FSMContext):
-        await message.answer("Опишите «другое» хобби 👇")
+        await other_value_text(message, state)
         await state.set_state(SurveyStates.q15_hobbies_other)
 
 
